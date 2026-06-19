@@ -180,7 +180,7 @@ export const NAVIGATION = [
               { label: 'Branch', href: '/config/settings/basic/branch' },
               { label: 'Data Copy', href: '/config/settings/basic/data-copy' },
               { label: 'Student ID Configuration', href: '/config/settings/basic/student-id' },
-              { label: 'Class', href: '/config/settings/basic/class' },
+              { label: 'Class', href: '/config/settings/basic/classes' },
               { label: 'Section', href: '/config/settings/basic/section' },
               { label: 'Faculty', href: '/config/settings/basic/faculty' },
               { label: 'Group', href: '/config/settings/basic/group' },
@@ -190,8 +190,8 @@ export const NAVIGATION = [
               { label: 'Room No', href: '/config/settings/basic/room' },
               { label: 'Semester', href: '/config/settings/basic/semester' },
               { label: 'Term', href: '/config/settings/basic/term' },
-              { label: 'Main Marking Head', href: '/config/settings/basic/marking-head' },
-              { label: 'Grade Point Configuration', href: '/config/settings/basic/grade-point' },
+              { label: 'Main Marking Head', href: '/config/settings/basic/main-marking-head' },
+              { label: 'Grade Point Configuration', href: '/config/settings/basic/grade-point-calculation' },
               { label: 'Session', href: '/config/settings/basic/session' },
               { label: 'Route', href: '/config/settings/basic/route' },
             ]
@@ -219,7 +219,58 @@ export const NAVIGATION = [
           }
         ]
       },
-      { label: 'General Settings', href: '/config/settings/general' },
+      { 
+        label: 'General Settings', 
+        href: '#',
+        subItems: [
+          {
+            label: 'General Settings',
+            href: '#',
+            subItems: [
+              { label: 'Global Configuration', href: '/config/settings/general/global-config' },
+              { label: 'General Configuration', href: '/config/settings/general/general-config' },
+              { label: 'Class Wise Config', href: '/config/settings/general/class-wise-config' },
+              { label: 'Co-curricular Activities', href: '/config/settings/general/co-curricular' },
+              { label: 'Moral Behaviors', href: '/config/settings/general/moral-behaviors' },
+              { label: 'Occupations', href: '/config/settings/general/occupations' },
+              { label: 'Board', href: '/config/settings/general/board' },
+              { label: 'Accessories Template', href: '/config/settings/general/accessories-template' },
+            ]
+          },
+          { 
+            label: 'Design', 
+            href: '#',
+            subItems: [
+              { label: 'Template Settings', href: '/config/settings/general/design/template' },
+              { label: 'Marksheet Design', href: '/config/settings/general/design/marksheet' },
+              { label: 'Admit Card Design', href: '/config/settings/general/design/admit-card' },
+              { label: 'Seat Plan Design', href: '/config/settings/general/design/seat-plan' },
+              { label: 'Student ID Card Configuration', href: '/config/settings/general/design/student-id' },
+              { label: 'Teacher ID Card Configuration', href: '/config/settings/general/design/teacher-id' },
+              { label: 'Pad Configuration', href: '/config/settings/general/design/pad' },
+            ]
+          },
+          { 
+            label: 'Signature', 
+            href: '#',
+            subItems: [
+              { label: 'Signature', href: '/config/settings/general/signature/main' },
+              { label: 'Class Wise Signature', href: '/config/settings/general/signature/class-wise' },
+              { label: 'Subject Wise Signature', href: '/config/settings/general/signature/subject-wise' },
+            ]
+          },
+          { 
+            label: 'Student Fees', 
+            href: '#',
+            subItems: [
+              { label: 'User Wise Asset Head', href: '/config/settings/general/fees/user-asset-head' },
+              { label: 'Online Payment Setup', href: '/config/settings/general/fees/online-payment' },
+              { label: 'Payslip Settings', href: '/config/settings/general/fees/payslip' },
+              { label: 'Waiver Settings', href: '/config/settings/general/fees/waiver' },
+            ]
+          }
+        ]
+      }
     ],
   },
   
