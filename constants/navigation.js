@@ -93,7 +93,30 @@ export const NAVIGATION = [
   {
     label: 'Routine',
     icon: MdEventNote,
-    href: '/routine',
+    href: '#',
+    subItems: [
+      // {
+      //   label: 'Class Routine',
+      //   href: '#',
+      //   subItems: [
+      //     { label: 'Period List', href: '/routine/class-routine/period-list' },
+      //     { label: 'Routine Configuration', href: '/routine/class-routine/routine-config' },
+      //     { label: 'Period Configuration', href: '/routine/class-routine/period-config' },
+      //     { label: 'Make Routine', href: '/routine/class-routine/make-routine' },
+      //     { label: 'View Routine', href: '/routine/class-routine/view-routine' },
+      //   ]
+      // },
+      {
+        label: 'Exam Routine',
+        href: '#',
+        subItems: [
+          { label: 'Routine Session', href: '/routine/exam-routine/routine-session' },
+          { label: 'Routine Process', href: '/routine/exam-routine/routine-process' },
+          { label: 'View Routine', href: '/routine/exam-routine/view-routine' },
+          { label: 'Class Wise Routine', href: '/routine/exam-routine/class-wise-routine' },
+        ]
+      }
+    ]
   },
   {
     label: 'Inventory',
