@@ -1,7 +1,9 @@
 // app/components/routine/examroutine/MasterRoutineTable.jsx
 import React, { useState, useRef } from "react"; // 💡 Import useRef
-import { FiPrinter } from "react-icons/fi";
+import { FiEdit, FiPrinter, FiTrash2 } from "react-icons/fi";
 import { useReactToPrint } from "react-to-print"; // 💡 Import the print hook
+import { useRouter, usePathname } from "next/navigation";
+import api from "@/lib/axios";
 
 const formatTime = (time24) => {
   if (!time24) return "";
@@ -24,16 +26,23 @@ const formatDate = (dateStr) => {
 export default function MasterRoutineTable({ 
   mergedRoutines, 
   examName, 
+  examYear,
   sessionsList, 
   classesList,
   instituteData,
-  signatureData 
+  signatureData ,
+  onDeleteSuccess
 }) {
   
   const [useDigitalSignature, setUseDigitalSignature] = useState(signatureData?.isUse === "Yes");
   
   // 💡 NEW: Create a reference for the printable area
   const componentRef = useRef(null);
+  const router = useRouter();
+
+  const pathname = usePathname();
+
+  const isProcessPage = pathname.includes("/routine/exam-routine/routine-process");
 
   // 💡 NEW: Setup the print function
   const handlePrint = useReactToPrint({
@@ -44,6 +53,30 @@ export default function MasterRoutineTable({
       @media print { body { -webkit-print-color-adjust: exact; } }
     ` // Ensures background colors and watermark print correctly
   });
+
+  // 🎯 এডিট হ্যান্ডলার: কুয়েরি প্যারামিটার সহ পেজে রিডাইরেক্ট করবে
+  const handleEdit = () => {
+    const encodedExamName = encodeURIComponent(examName);
+    const encodedExamYear = encodeURIComponent(examYear || "");
+    router.push(`/routine/exam-routine/routine-process?examName=${encodedExamName}&examYear=${encodedExamYear}`);
+  };
+
+  // 🎯 ডিলিট হ্যান্ডলার: ইউজার কনফার্মেশন নিয়ে ডাটাবেস থেকে ডিলিট করবে
+  const handleDelete = async () => {
+    const confirmDelete = window.confirm(`Are you sure you want to delete the entire routine for "${examName}"?`);
+    if (!confirmDelete) return;
+
+    try {
+      const res = await api.delete(`/v1/exam-routine/process?examName=${encodeURIComponent(examName)}&examYear=${encodeURIComponent(examYear || "2026")}`);
+      if (res.data.success) {
+        alert("Routine deleted successfully!");
+        if (onDeleteSuccess) onDeleteSuccess(); // রুটিন ডিলিট হলে ফ্রন্টএন্ড স্টেট ক্লিন করার জন্য
+      }
+    } catch (error) {
+      console.error("Failed to delete routine", error);
+      alert(error.response?.data?.message || "Something went wrong while deleting.");
+    }
+  };
 
   const leafCols = [];
   const datesSet = new Set();
@@ -88,8 +121,8 @@ export default function MasterRoutineTable({
 
   if (leafCols.length === 0) return null;
 
-  const schoolName = instituteData?.nameEnglish || "SCHOOL AND COLLEGE";
-  const schoolAddress = instituteData?.address2 || "Address Not Available";
+  const schoolName = instituteData?.nameEnglish || "GOBINDA IDEAL SCHOOL AND COLLEGE";
+  const schoolAddress = instituteData?.address1English || "Sonaher, Debiganj, Panchagarh";
   const eiin = instituteData?.eiin || "";
   const mobile = instituteData?.mobile || "";
   const email = instituteData?.email || "";
@@ -100,6 +133,25 @@ export default function MasterRoutineTable({
       
       {/* 💡 NEW: Action Buttons moved OUTSIDE the printable area */}
       <div className="flex justify-end items-center gap-4 mb-4">
+
+        {/* 💡 কন্ডিশনাল রেন্ডারিং: প্রসেস পেজে না থাকলে কেবল তখনই এডিট বাটন দেখাবে */}
+        {!isProcessPage && (
+          <button 
+            onClick={handleEdit} 
+            className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded shadow text-xs font-medium flex items-center gap-2 transition-colors"
+          >
+            <FiEdit size={14} /> Edit Routine
+          </button>
+        )}
+
+        {/* 💡 ডিলিট বাটন */}
+        <button 
+          onClick={handleDelete} 
+          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded shadow text-xs font-medium flex items-center gap-2 transition-colors"
+        >
+          <FiTrash2 size={14} /> Delete Routine
+        </button>
+
         {signatureData?.signatureUrl && (
           <label className="flex items-center cursor-pointer text-xs bg-white shadow-sm hover:bg-gray-50 text-gray-800 font-medium py-2 px-3 rounded border border-gray-300 transition-colors">
             <input 
@@ -146,7 +198,7 @@ export default function MasterRoutineTable({
               {schoolName}
             </h2>
             <p className="text-[13.5px] text-gray-800 font-bold mb-0.5">
-              {schoolAddress} <span className="mx-1.5 text-gray-400 font-normal">|</span> {eiin}
+              {schoolAddress} <span className="mx-1.5 text-gray-400 font-normal">|</span> EIIN: {eiin}
             </p>
             <p className="text-[13.5px] text-gray-800 font-bold mb-3">
               Mobile: {mobile} <span className="mx-1.5 text-gray-400 font-normal">|</span> Email: {email}

@@ -2,12 +2,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import api from "@/lib/axios";
 import { FiPlus, FiTrash2 } from "react-icons/fi";
 import MasterRoutineTable from "@/components/routine/examroutine/MasterRoutineTable";
 // 💡 Import the new separated component
 
 export default function ExamRoutineProcessPage() {
+  const searchParams = useSearchParams();
+
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -58,22 +61,44 @@ export default function ExamRoutineProcessPage() {
         const principalSig = signatureSettings?.find(s => s.key === "principal");
         setSignatureData(principalSig);
 
+        const urlExamName = searchParams.get("examName");
+        if (urlExamName) {
+          setExamName(decodeURIComponent(urlExamName));
+        }
+
       } catch (error) { console.error(error); }
       finally { setIsLoading(false); }
     };
     fetchDependencies();
   }, []);
 
-  useEffect(() => {
-    if (!examName) return;
-    const fetchSavedRoutines = async () => {
-      try {
-        const res = await api.get(`/v1/exam-routine/process?examName=${examName}`);
-        setAllSavedRoutines(res.data.data);
-      } catch (error) { console.error(error); }
-    };
-    fetchSavedRoutines();
-  }, [examName]);
+  //  নতুন ফ্রন্টএন্ড কোড (আপডেট করুন):
+useEffect(() => {
+  if (!examName) return;
+
+  // examName থেকে বছরটি আলাদা করে নিন (যেমন: "Half Yearly Exam, 2026" থেকে "2026")
+  const extractedYear = examName.includes(',') 
+    ? examName.split(',')[1].trim() 
+    : new Date().getFullYear().toString();
+
+  const fetchSavedRoutines = async () => {
+    try {
+      // 🎯 এখন কুয়েরিতে examName এবং examYear দুটিই পাঠানো হচ্ছে
+      const res = await api.get(`/v1/exam-routine/process?examName=${examName}&examYear=${extractedYear}`);
+      setAllSavedRoutines(res.data.data);
+    } catch (error) { console.error(error); }
+  };
+  fetchSavedRoutines();
+}, [examName]);
+
+
+  const handleRoutineDeleteSuccess = () => {
+    setAllSavedRoutines([]);
+    setRoutineSubjects([]);
+    setSelectedClass("");
+    setSelectedGroup("");
+    setExamName("");
+  };
 
   const handleProcess = () => {
     if (!examName || !selectedClass || !selectedGroup) return alert("Select Exam, Class & Group");
@@ -164,6 +189,8 @@ export default function ExamRoutineProcessPage() {
   if (routineSubjects.length > 0) {
     mergedRoutines.push({ examName, className: selectedClass, groupName: selectedGroup, subjects: routineSubjects });
   }
+
+  const targetYear = examName.includes(',') ? examName.split(',')[1].trim() : currentYear.toString();
 
   const inputStyle = "w-full border border-[#3dc1a1] rounded p-1.5 text-[13px] focus:outline-none focus:ring-1 focus:ring-[#3dc1a1] bg-white";
 
@@ -306,10 +333,12 @@ export default function ExamRoutineProcessPage() {
       <MasterRoutineTable 
         mergedRoutines={mergedRoutines} 
         examName={examName} 
+        examYear={targetYear}
         sessionsList={sessionsList} 
         classesList={classesList} 
         instituteData={instituteData}
         signatureData={signatureData}
+        onDeleteSuccess={handleRoutineDeleteSuccess}
       />
 
     </div>

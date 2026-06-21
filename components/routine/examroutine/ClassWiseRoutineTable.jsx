@@ -158,7 +158,7 @@ export function ClassWiseRoutineTable({
               {instituteData?.nameEnglish || "GOBINDA IDEAL SCHOOL AND COLLEGE"}
             </h2>
             <p className="text-[13.5px] text-gray-800 font-bold mb-0.5">
-              {instituteData?.address1English || "Sonaher, Debiganj, Panchagarh."} <span className="mx-1.5 text-gray-400 font-normal">|</span> {instituteData?.eiin ? `EIIN: ${instituteData.eiin}` : ""}
+              {instituteData?.address1English || "Sonaher, Debiganj, Panchagarh"} <span className="mx-1.5 text-gray-400 font-normal">|</span> {instituteData?.eiin ? `EIIN: ${instituteData.eiin}` : ""}
             </p>
             <p className="text-[13.5px] text-gray-800 font-bold mb-3">
               Mobile: {instituteData?.mobile || "01724304756"} <span className="mx-1.5 text-gray-400 font-normal">|</span> Email: {instituteData?.email || "sonahergps@gmail.com"}
