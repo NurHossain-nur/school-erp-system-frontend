@@ -13,7 +13,7 @@ export default function ClassWiseRoutinePage() {
   const [sessionsList, setSessionsList] = useState([]);
   const [instituteData, setInstituteData] = useState(null);
   const [subjectsList, setSubjectsList] = useState([]);
-  const [signatureData, setSignatureData] = useState(null); // 💡 NEW: Signature State
+  const [signatureData, setSignatureData] = useState(null);
 
   // Filter States
   const [selectedYear, setSelectedYear] = useState("");
@@ -30,7 +30,6 @@ export default function ClassWiseRoutinePage() {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        // 💡 NEW: Added signature API call
         const [routineRes, sessionRes, instRes, subjectRes, sigRes] = await Promise.all([
           api.get("/v1/exam-routine/process"),
           api.get("/v1/exam-routine/sessions"),
@@ -44,25 +43,25 @@ export default function ClassWiseRoutinePage() {
         setInstituteData(instRes.data.data || null);
         setSubjectsList(subjectRes.data.data || []);
 
-        // 💡 NEW: Extract Principal Signature
         const signatureSettings = Array.isArray(sigRes.data.data) ? sigRes.data.data[0]?.settings : sigRes.data.data?.settings;
         const principalSig = signatureSettings?.find(s => s.key === "principal");
         setSignatureData(principalSig);
 
-      } catch (error) { console.error("Failed to fetch data", error); } 
-      finally { setIsLoading(false); }
+      } catch (error) { 
+        console.error("Failed to fetch data", error); 
+      } finally { 
+        setIsLoading(false); 
+      }
     };
     fetchInitialData();
   }, []);
 
-  const extractYear = (str) => {
-    const match = str.match(/\b(20\d{2})\b/);
-    return match ? match[1] : "N/A";
-  };
-
-  const uniqueYears = [...new Set(allRoutines.map(r => extractYear(r.examName)))].filter(y => y !== "N/A").sort();
-  const examsForYear = [...new Set(allRoutines.filter(r => extractYear(r.examName) === selectedYear).map(r => r.examName))];
-  const classesForExam = [...new Set(allRoutines.filter(r => r.examName === selectedExam).map(r => r.className))];
+  // 🎯 সংশোধিত লজিক: সরাসরি examYear থেকে ইউনিক বছরগুলো ফিল্টার করা
+  const uniqueYears = [...new Set(allRoutines.map(r => r.examYear))].filter(Boolean).sort();
+  
+  // 🎯 সংশোধিত লজিক: সিলেক্টেড বছরের সাপেক্ষে পরীক্ষা এবং ক্লাসের নাম ফিল্টার করা
+  const examsForYear = [...new Set(allRoutines.filter(r => r.examYear === selectedYear).map(r => r.examName))];
+  const classesForExam = [...new Set(allRoutines.filter(r => r.examYear === selectedYear && r.examName === selectedExam).map(r => r.className))];
 
   useEffect(() => { setSelectedExam(""); setSelectedClass(""); setReportData(null); }, [selectedYear]);
   useEffect(() => { setSelectedClass(""); setReportData(null); }, [selectedExam]);
@@ -70,7 +69,8 @@ export default function ClassWiseRoutinePage() {
 
   const handleViewReport = () => {
     if (!selectedYear || !selectedExam || !selectedClass) return alert("Please select Year, Exam, and Class!");
-    const filteredRoutines = allRoutines.filter(r => r.examName === selectedExam && r.className === selectedClass);
+    // 🎯 সংশোধিত লজিক: ফাইনাল রিপোর্টেও examYear ম্যাচ করা হলো
+    const filteredRoutines = allRoutines.filter(r => r.examYear === selectedYear && r.examName === selectedExam && r.className === selectedClass);
     if (filteredRoutines.length === 0) return alert("No routine found for this selection.");
     setReportData(filteredRoutines);
   };
@@ -134,9 +134,8 @@ export default function ClassWiseRoutinePage() {
         </div>
 
         <div className="flex justify-end gap-3 pt-2">
-          {/* 💡 Note: Print buttons moved to the table component where they belong */}
           <button onClick={handleViewReport} className="bg-[#434b8c] hover:bg-[#2f3573] text-white px-8 py-2.5 rounded shadow text-sm font-medium transition">
-             View Report
+              View Report
           </button>
         </div>
       </div>
@@ -151,7 +150,7 @@ export default function ClassWiseRoutinePage() {
         showRoomNo={showRoomNo}
         sessionsList={sessionsList}
         subjectsList={subjectsList}
-        signatureData={signatureData} // 💡 Pass the signature down
+        signatureData={signatureData}
       />
       
     </div>
