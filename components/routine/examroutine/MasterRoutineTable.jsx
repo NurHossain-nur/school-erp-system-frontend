@@ -145,12 +145,14 @@ export default function MasterRoutineTable({
         )}
 
         {/* 💡 ডিলিট বাটন */}
+        {!isProcessPage && (
         <button 
           onClick={handleDelete} 
           className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded shadow text-xs font-medium flex items-center gap-2 transition-colors"
         >
           <FiTrash2 size={14} /> Delete Routine
         </button>
+        )}
 
         {signatureData?.signatureUrl && (
           <label className="flex items-center cursor-pointer text-xs bg-white shadow-sm hover:bg-gray-50 text-gray-800 font-medium py-2 px-3 rounded border border-gray-300 transition-colors">
@@ -212,18 +214,18 @@ export default function MasterRoutineTable({
         </div>
 
         <div className="w-full overflow-x-auto custom-scrollbar">
-          <table className="w-full text-xs text-center border-collapse border-2 border-gray-800">
+          <table className="w-full text-xs text-center border-collapse border-2 border-gray-800 ">
             <thead className="bg-white font-bold text-gray-900">
               <tr>
-                <td colSpan={leafCols.length + 1} className="border border-gray-400 p-1.5 text-xs bg-gray-50">
+                <td colSpan={leafCols.length + 1} className="border text-gray-900 border-gray-400 p-1.5 text-xs bg-gray-50">
                   Exam: {examName}
                 </td>
               </tr>
               <tr>
-                <td className="border border-gray-400 p-2 w-24 align-middle" rowSpan="3">Date</td>
+                <td className="border text-gray-900 border-gray-400 p-2 w-24 align-middle" rowSpan="3">Date</td>
                 {Object.keys(headerStructure).map(cName => {
                   const totalCols = Object.values(headerStructure[cName]).reduce((sum, arr) => sum + arr.length, 0);
-                  return <td key={cName} colSpan={totalCols} className="border border-gray-400 p-1.5 uppercase">{cName}</td>
+                  return <td key={cName} colSpan={totalCols} className="border border-gray-400 text-gray-900 p-1.5 uppercase">{cName}</td>
                 })}
               </tr>
               <tr>
@@ -232,9 +234,9 @@ export default function MasterRoutineTable({
                     const grps = headerStructure[cName][sessionName];
                     const sampleCol = grps[0];
                     return (
-                      <td key={`${cName}_${sessionName}`} colSpan={grps.length} className="border border-gray-400 p-1 leading-tight">
-                        <span className="font-bold">{sessionName}</span><br/>
-                        <span className="text-xs font-normal text-gray-600">{sampleCol.startTime}<br/>{sampleCol.endTime}</span>
+                      <td key={`${cName}_${sessionName}`} colSpan={grps.length} className="border text-xs border-gray-400 p-1 leading-tight">
+                        <span className="font-bold text-xs text-gray-900">{sessionName}</span><br/>
+                        <span className=" text-xs font-normal text-gray-900">{sampleCol.startTime}<br/>{sampleCol.endTime}</span>
                       </td>
                     )
                   })
@@ -242,7 +244,7 @@ export default function MasterRoutineTable({
               </tr>
               <tr>
                 {leafCols.map((col, i) => (
-                  <td key={`grp_${i}`} className="border border-gray-400 p-1 text-xs text-gray-500 uppercase bg-gray-50">
+                  <td key={`grp_${i}`} className="border border-gray-400 p-1 text-xs text-gray-800 uppercase bg-gray-50">
                     {col.groupName}
                   </td>
                 ))}
@@ -253,14 +255,14 @@ export default function MasterRoutineTable({
                 const { shortDate, weekday } = formatDate(date);
                 return (
                   <tr key={date} className="print:break-inside-avoid">
-                    <td className="border border-gray-400 p-1.5 font-medium whitespace-nowrap bg-gray-50">
+                    <td className="border border-gray-400 p-1.5 font-semibold whitespace-nowrap bg-gray-50 text-gray-900">
                       {shortDate}<br/>{weekday}
                     </td>
                     {leafCols.map((col, i) => {
                       const cellKey = `${date}_${col.className}_${col.session}_${col.groupName}`;
                       const subjectName = masterMap[cellKey];
                       return (
-                        <td key={`cell_${i}`} className="border border-gray-400 p-1.5 align-middle">
+                        <td key={`cell_${i}`} className="border border-gray-400 p-1.5 align-middle font-medium text-gray-900">
                           {subjectName || ""}
                         </td>
                       );

@@ -1,14 +1,14 @@
 // app/(erp)/routine/exam-routine/routine-process/page.jsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react"; // 💡 Suspense আমদানি করা হয়েছে
 import { useSearchParams } from "next/navigation";
 import api from "@/lib/axios";
 import { FiPlus, FiTrash2 } from "react-icons/fi";
 import MasterRoutineTable from "@/components/routine/examroutine/MasterRoutineTable";
-// 💡 Import the new separated component
 
-export default function ExamRoutineProcessPage() {
+// 💡 মূল লজিকটি এই সাব-কম্পোনেন্টে রাখা হয়েছে
+function RoutineProcessContent() {
   const searchParams = useSearchParams();
 
   const [isLoading, setIsLoading] = useState(true);
@@ -24,10 +24,8 @@ export default function ExamRoutineProcessPage() {
   const [roomsList, setRoomsList] = useState([]);
   const [classSubjectMappings, setClassSubjectMappings] = useState([]);
 
-  // 💡 NEW: State to hold Institute Data
+  // State to hold Institute & Signature Data
   const [instituteData, setInstituteData] = useState(null);
-
-  // 💡 NEW: State to hold Principal Signature Data
   const [signatureData, setSignatureData] = useState(null);
   
   // States
@@ -35,8 +33,8 @@ export default function ExamRoutineProcessPage() {
   const [selectedClass, setSelectedClass] = useState("");
   const [selectedGroup, setSelectedGroup] = useState("");
   
-  const [routineSubjects, setRoutineSubjects] = useState([]); // Middle Table
-  const [allSavedRoutines, setAllSavedRoutines] = useState([]); // Database Saved Routine
+  const [routineSubjects, setRoutineSubjects] = useState([]); 
+  const [allSavedRoutines, setAllSavedRoutines] = useState([]); 
 
   useEffect(() => {
     const fetchDependencies = async () => {
@@ -52,11 +50,9 @@ export default function ExamRoutineProcessPage() {
         setRoomsList(rmRes.data.data);
         setClassSubjectMappings(mapRes.data.data);
 
-        // 💡 NEW: Save institute data. (Checks if it's an array or direct object)
         const instData = Array.isArray(instRes.data.data) ? instRes.data.data[0] : instRes.data.data;
         setInstituteData(instData);
 
-        // 💡 NEW: Extract Principal Signature
         const signatureSettings = Array.isArray(sigRes.data.data) ? sigRes.data.data[0]?.settings : sigRes.data.data?.settings;
         const principalSig = signatureSettings?.find(s => s.key === "principal");
         setSignatureData(principalSig);
@@ -70,27 +66,23 @@ export default function ExamRoutineProcessPage() {
       finally { setIsLoading(false); }
     };
     fetchDependencies();
-  }, []);
+  }, [searchParams]); // 💡 searchParams ডিপেন্ডেন্সি যুক্ত করা হয়েছে
 
-  //  নতুন ফ্রন্টএন্ড কোড (আপডেট করুন):
-useEffect(() => {
-  if (!examName) return;
+  useEffect(() => {
+    if (!examName) return;
 
-  // examName থেকে বছরটি আলাদা করে নিন (যেমন: "Half Yearly Exam, 2026" থেকে "2026")
-  const extractedYear = examName.includes(',') 
-    ? examName.split(',')[1].trim() 
-    : new Date().getFullYear().toString();
+    const extractedYear = examName.includes(',') 
+      ? examName.split(',')[1].trim() 
+      : new Date().getFullYear().toString();
 
-  const fetchSavedRoutines = async () => {
-    try {
-      // 🎯 এখন কুয়েরিতে examName এবং examYear দুটিই পাঠানো হচ্ছে
-      const res = await api.get(`/v1/exam-routine/process?examName=${examName}&examYear=${extractedYear}`);
-      setAllSavedRoutines(res.data.data);
-    } catch (error) { console.error(error); }
-  };
-  fetchSavedRoutines();
-}, [examName]);
-
+    const fetchSavedRoutines = async () => {
+      try {
+        const res = await api.get(`/v1/exam-routine/process?examName=${examName}&examYear=${extractedYear}`);
+        setAllSavedRoutines(res.data.data);
+      } catch (error) { console.error(error); }
+    };
+    fetchSavedRoutines();
+  }, [examName]);
 
   const handleRoutineDeleteSuccess = () => {
     setAllSavedRoutines([]);
@@ -184,17 +176,17 @@ useEffect(() => {
     finally { setIsSaving(false); }
   };
 
-  // 💡 Data prep for the child component
   const mergedRoutines = [...allSavedRoutines.filter(r => !(r.className === selectedClass && r.groupName === selectedGroup))];
   if (routineSubjects.length > 0) {
     mergedRoutines.push({ examName, className: selectedClass, groupName: selectedGroup, subjects: routineSubjects });
   }
 
+  // 💡 targetYear ভ্যারিয়েবলটি early return এর ঠিক উপরে রাখা হয়েছে (আগের ReferenceError দূর করার জন্য)
   const targetYear = examName.includes(',') ? examName.split(',')[1].trim() : currentYear.toString();
 
-  const inputStyle = "w-full border border-[#3dc1a1] rounded p-1.5 text-[13px] focus:outline-none focus:ring-1 focus:ring-[#3dc1a1] bg-white";
-
   if (isLoading) return <div className="p-10 text-center">Loading Data...</div>;
+
+  const inputStyle = "w-full border border-[#3dc1a1] rounded p-1.5 text-[13px] focus:outline-none focus:ring-1 focus:ring-[#3dc1a1] bg-white";
 
   return (
     <div className="space-y-6 pb-20">
@@ -221,15 +213,12 @@ useEffect(() => {
               placeholder={`e.g., Model test 1, ${currentYear}`} 
             />
             <datalist id="exam-presets">
-              {/* প্রধান পরীক্ষাসমূহ */}
               <option value={`1st Term Exam, ${currentYear}`} />
               <option value={`2nd Term Exam, ${currentYear}`} />
               <option value={`Half Yearly Exam, ${currentYear}`} />
               <option value={`Pre-Test Exam, ${currentYear}`} />
               <option value={`Test Exam / Selection Exam, ${currentYear}`} />
               <option value={`Final Exam, ${currentYear}`} />
-
-              {/* মডেল টেস্ট ও কুইজ */}
               <option value={`Model test 1, ${currentYear}`} />
               <option value={`Model Test 2, ${currentYear}`} />
               <option value={`Pre-Model Test, ${currentYear}`} />
@@ -237,11 +226,6 @@ useEffect(() => {
               <option value={`Class Test 2 (CT-2), ${currentYear}`} />
               <option value={`Weekly Quiz 1, ${currentYear}`} />
               <option value={`Monthly Evaluation Test, ${currentYear}`} />
-              
-              {/* অন্যান্য এসেসমেন্ট */}
-              {/* <option value={`Continuous Assessment (CA), ${currentYear}`} />
-              <option value={`Practical Exam, ${currentYear}`} />
-              <option value={`Viva Voce / Oral Exam, ${currentYear}`} /> */}
             </datalist>
           </div>
           <div>
@@ -266,7 +250,7 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* MIDDLE SECTION: Subjects Assignment Table */}
+      {/* MIDDLE SECTION */}
       {routineSubjects.length > 0 && (
         <div className="bg-white rounded-md shadow-sm border border-gray-200 overflow-hidden">
           <div className="w-full overflow-x-auto">
@@ -329,7 +313,6 @@ useEffect(() => {
         </div>
       )}
 
-      {/* 💡 Replaced the massive code block with our clean new component */}
       <MasterRoutineTable 
         mergedRoutines={mergedRoutines} 
         examName={examName} 
@@ -340,7 +323,15 @@ useEffect(() => {
         signatureData={signatureData}
         onDeleteSuccess={handleRoutineDeleteSuccess}
       />
-
     </div>
+  );
+}
+
+// 💡 মেইন এক্সপোর্ট কম্পোনেন্ট যা ক্লায়েন্ট সাইড কুয়েরি প্যারামিটার হ্যান্ডেল করার জন্য Suspense র‍্যাপার ব্যবহার করছে
+export default function ExamRoutineProcessPage() {
+  return (
+    <Suspense fallback={<div className="p-10 text-center">Loading Exam Routine Process...</div>}>
+      <RoutineProcessContent />
+    </Suspense>
   );
 }

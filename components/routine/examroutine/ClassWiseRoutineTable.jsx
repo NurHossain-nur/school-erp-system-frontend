@@ -168,7 +168,7 @@ export function ClassWiseRoutineTable({
                 Class {selectedClass} Exam Routine
               </span>
             </div>
-            <p className="text-sm font-bold text-gray-600 mt-3 uppercase tracking-wide">
+            <p className="text-sm font-bold text-gray-800 mt-3 uppercase tracking-wide">
               {selectedExam}
             </p>
           </div>
@@ -176,7 +176,7 @@ export function ClassWiseRoutineTable({
 
         {/* 💡 3-TIER ROUTINE TABLE */}
         <div className="w-full overflow-x-auto print:overflow-visible">
-          <table className="w-full text-[13px] text-center border-collapse border-2 border-gray-800">
+          <table className="w-full text-sm text-center border-collapse border-2 border-gray-800">
             <thead className="bg-[#434b8c] text-white">
               
               {/* LEVEL 1: Shift Header */}
@@ -208,9 +208,9 @@ export function ClassWiseRoutineTable({
               <tr>
                 {leafCols.map(col => (
                   <React.Fragment key={`details_${col.key}`}>
-                    <th className="border border-[#5a62a3] p-1.5 text-[11px] font-bold uppercase tracking-wide">Subject</th>
-                    {showSubjectCode && <th className="border border-[#5a62a3] p-1.5 text-[11px] font-bold uppercase tracking-wide">Code</th>}
-                    <th className="border border-[#5a62a3] p-1.5 text-[11px] font-bold uppercase tracking-wide">Time</th>
+                    <th className="border border-[#5a62a3] p-1.5 text-xs font-bold uppercase tracking-wide">Subject</th>
+                    {showSubjectCode && <th className="border border-[#5a62a3] p-1.5 text-xs font-bold uppercase tracking-wide">Code</th>}
+                    <th className="border border-[#5a62a3] p-1.5 text-xs font-bold uppercase tracking-wide">Time</th>
                     {showRoomNo && <th className="border border-[#5a62a3] p-1.5 text-[11px] font-bold uppercase tracking-wide">Room</th>}
                   </React.Fragment>
                 ))}
@@ -234,10 +234,10 @@ export function ClassWiseRoutineTable({
                           </td>
                           {showSubjectCode && (
                             <td className="border border-gray-400 p-2 text-sm text-center">
-                              {cellData ? (subjectCodeMap[cellData.subjectName] || "*") : "-"}
+                              {cellData ? (subjectCodeMap[cellData.subjectName] || "-") : "-"}
                             </td>
                           )}
-                          <td className="border border-gray-400 p-2 text-[11px] whitespace-nowrap text-center text-gray-600 font-semibold">
+                          <td className="border border-gray-400 p-2 text-xs whitespace-nowrap text-center text-gray-800 font-semibold">
                             {cellData ? cellData.time : "-"}
                           </td>
                           {showRoomNo && (

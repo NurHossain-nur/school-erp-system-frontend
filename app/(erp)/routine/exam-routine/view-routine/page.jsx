@@ -25,39 +25,41 @@ export default function ExamRoutineViewPage() {
   const [selectedExam, setSelectedExam] = useState("");
   const [filteredRoutines, setFilteredRoutines] = useState([]);
 
+  // 💡 ডেটা ফেচ করার লজিকটিকে একটি আলাদা ফাংশনে নিয়ে আসা হয়েছে যাতে ডিলিট হওয়ার পর রিফ্রেশ করা যায়
+  const fetchAllData = async () => {
+    try {
+      const [routinesRes, sesRes, clsRes, instRes, sigRes] = await Promise.all([
+        api.get("/v1/exam-routine/process"), 
+        api.get("/v1/exam-routine/sessions"),
+        api.get("/v1/classes"),
+        api.get("/v1/institute"),
+        api.get("/v1/signatures")
+      ]);
+
+      const routines = routinesRes.data.data || [];
+      setAllRoutines(routines);
+      setSessionsList(sesRes.data.data);
+      setClassesList(clsRes.data.data);
+
+      const instData = Array.isArray(instRes.data.data) ? instRes.data.data[0] : instRes.data.data;
+      setInstituteData(instData);
+
+      const signatureSettings = Array.isArray(sigRes.data.data) ? sigRes.data.data[0]?.settings : sigRes.data.data?.settings;
+      const principalSig = signatureSettings?.find(s => s.key === "principal");
+      setSignatureData(principalSig);
+
+      // Unique Years এক্সট্রাক্ট করা
+      const uniqueYears = [...new Set(routines.map(r => r.examYear).filter(Boolean))].sort((a, b) => b - a);
+      setAvailableYears(uniqueYears);
+
+    } catch (error) {
+      console.error("Failed to fetch data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchAllData = async () => {
-      try {
-        const [routinesRes, sesRes, clsRes, instRes, sigRes] = await Promise.all([
-          api.get("/v1/exam-routine/process"), // Fetch all routines to extract years/exams
-          api.get("/v1/exam-routine/sessions"),
-          api.get("/v1/classes"),
-          api.get("/v1/institute"),
-          api.get("/v1/signatures")
-        ]);
-
-        const routines = routinesRes.data.data || [];
-        setAllRoutines(routines);
-        setSessionsList(sesRes.data.data);
-        setClassesList(clsRes.data.data);
-
-        const instData = Array.isArray(instRes.data.data) ? instRes.data.data[0] : instRes.data.data;
-        setInstituteData(instData);
-
-        const signatureSettings = Array.isArray(sigRes.data.data) ? sigRes.data.data[0]?.settings : sigRes.data.data?.settings;
-        const principalSig = signatureSettings?.find(s => s.key === "principal");
-        setSignatureData(principalSig);
-
-        // Extract unique years from the routines and sort them descending
-        const uniqueYears = [...new Set(routines.map(r => r.examYear).filter(Boolean))].sort((a, b) => b - a);
-        setAvailableYears(uniqueYears);
-
-      } catch (error) {
-        console.error("Failed to fetch data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
     fetchAllData();
   }, []);
 
@@ -70,15 +72,14 @@ export default function ExamRoutineViewPage() {
       return;
     }
 
-    // Extract unique exam names that belong to the selected year
     const examsForYear = allRoutines
       .filter(r => r.examYear === selectedYear && r.examName)
       .map(r => r.examName);
       
     const uniqueExams = [...new Set(examsForYear)];
     setAvailableExams(uniqueExams);
-    setSelectedExam(""); // Reset exam selection
-    setShowTable(false); // Hide table until "View" is clicked
+    setSelectedExam(""); 
+    setShowTable(false); 
   }, [selectedYear, allRoutines]);
 
   // Handle View Button Click
@@ -88,13 +89,21 @@ export default function ExamRoutineViewPage() {
       return;
     }
 
-    // Filter routines down to only the ones matching the selected year and exam
     const targetedRoutines = allRoutines.filter(
       r => r.examYear === selectedYear && r.examName === selectedExam
     );
 
     setFilteredRoutines(targetedRoutines);
     setShowTable(true);
+  };
+
+  // 💡 রুটিন ডিলিট সফল হলে স্টেট ক্লিন করার হ্যান্ডলার
+  const handleRoutineDeleteSuccess = () => {
+    setShowTable(false);
+    setSelectedExam("");
+    setFilteredRoutines([]);
+    setIsLoading(true);
+    fetchAllData(); // ডাটাবেজ থেকে লেটেস্ট ডেটা আবার ফেচ করে ড্রপডাউন আপডেট করবে
   };
 
   const inputStyle = "w-full border border-[#3dc1a1] rounded p-2 text-[13px] focus:outline-none focus:ring-1 focus:ring-[#3dc1a1] bg-white";
@@ -144,7 +153,7 @@ export default function ExamRoutineViewPage() {
               value={selectedExam} 
               onChange={(e) => {
                 setSelectedExam(e.target.value);
-                setShowTable(false); // Hide table if they change the dropdown
+                setShowTable(false); 
               }} 
               className={inputStyle}
               disabled={!selectedYear}
@@ -174,10 +183,12 @@ export default function ExamRoutineViewPage() {
         <MasterRoutineTable 
           mergedRoutines={filteredRoutines} 
           examName={selectedExam} 
+          examYear={selectedYear} // 💡 ফিক্স: সঠিক examYear প্রপ্স পাঠানো হয়েছে
           sessionsList={sessionsList} 
           classesList={classesList} 
           instituteData={instituteData} 
           signatureData={signatureData} 
+          onDeleteSuccess={handleRoutineDeleteSuccess} // 💡 ফিক্স: ডিলিট হ্যান্ডলার যুক্ত করা হয়েছে
         />
       )}
       
