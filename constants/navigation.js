@@ -253,7 +253,7 @@ export const NAVIGATION = [
               { label: 'Global Configuration', href: '/config/settings/general/global-config' },
               { label: 'General Configuration', href: '/config/settings/general/general-config' },
               { label: 'Class Wise Config', href: '/config/settings/general/class-wise-config' },
-              { label: 'Co-curricular Activities', href: '/config/settings/general/co-curricular' },
+              { label: 'Co-curricular Activities', href: '/config/settings/general/co-curriculer-act' },
               { label: 'Moral Behaviors', href: '/config/settings/general/moral-behaviors' },
               { label: 'Occupations', href: '/config/settings/general/occupations' },
               { label: 'Board', href: '/config/settings/general/board' },
