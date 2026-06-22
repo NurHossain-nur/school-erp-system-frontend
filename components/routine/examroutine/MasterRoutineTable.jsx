@@ -1,7 +1,7 @@
 // app/components/routine/examroutine/MasterRoutineTable.jsx
-import React, { useState, useRef } from "react"; // 💡 Import useRef
-import { FiEdit, FiPrinter, FiTrash2 } from "react-icons/fi";
-import { useReactToPrint } from "react-to-print"; // 💡 Import the print hook
+import React, { useState, useRef } from "react";
+import { FiEdit, FiPrinter, FiTrash2, FiSettings } from "react-icons/fi";
+import { useReactToPrint } from "react-to-print";
 import { useRouter, usePathname } from "next/navigation";
 import api from "@/lib/axios";
 
@@ -36,32 +36,35 @@ export default function MasterRoutineTable({
   
   const [useDigitalSignature, setUseDigitalSignature] = useState(signatureData?.isUse === "Yes");
   
-  // 💡 NEW: Create a reference for the printable area
+  // 💡 NEW: States for Dynamic Font Styling
+  const [tableFontSize, setTableFontSize] = useState(13); // Default 13px
+  const [fontFamily, setFontFamily] = useState("Arial, sans-serif");
+
   const componentRef = useRef(null);
   const router = useRouter();
-
   const pathname = usePathname();
-
   const isProcessPage = pathname.includes("/routine/exam-routine/routine-process");
 
-  // 💡 NEW: Setup the print function
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
-    documentTitle: `${examName} Routine`, // Names the downloaded PDF nicely
+    documentTitle: `${examName} Routine`, 
     pageStyle: `
       @page { size: auto; margin: 8mm; }
-      @media print { body { -webkit-print-color-adjust: exact; } }
-    ` // Ensures background colors and watermark print correctly
+      @media print { 
+        body { 
+          -webkit-print-color-adjust: exact; 
+          print-color-adjust: exact;
+        } 
+      }
+    `
   });
 
-  // 🎯 এডিট হ্যান্ডলার: কুয়েরি প্যারামিটার সহ পেজে রিডাইরেক্ট করবে
   const handleEdit = () => {
     const encodedExamName = encodeURIComponent(examName);
     const encodedExamYear = encodeURIComponent(examYear || "");
     router.push(`/routine/exam-routine/routine-process?examName=${encodedExamName}&examYear=${encodedExamYear}`);
   };
 
-  // 🎯 ডিলিট হ্যান্ডলার: ইউজার কনফার্মেশন নিয়ে ডাটাবেস থেকে ডিলিট করবে
   const handleDelete = async () => {
     const confirmDelete = window.confirm(`Are you sure you want to delete the entire routine for "${examName}"?`);
     if (!confirmDelete) return;
@@ -70,7 +73,7 @@ export default function MasterRoutineTable({
       const res = await api.delete(`/v1/exam-routine/process?examName=${encodeURIComponent(examName)}&examYear=${encodeURIComponent(examYear || "2026")}`);
       if (res.data.success) {
         alert("Routine deleted successfully!");
-        if (onDeleteSuccess) onDeleteSuccess(); // রুটিন ডিলিট হলে ফ্রন্টএন্ড স্টেট ক্লিন করার জন্য
+        if (onDeleteSuccess) onDeleteSuccess();
       }
     } catch (error) {
       console.error("Failed to delete routine", error);
@@ -131,31 +134,63 @@ export default function MasterRoutineTable({
   return (
     <div className="mt-8">
       
-      {/* 💡 NEW: Action Buttons moved OUTSIDE the printable area */}
-      <div className="flex justify-end items-center gap-4 mb-4">
+      {/* 💡 Action Buttons OUTSIDE printable area */}
+      <div className="flex flex-wrap justify-end items-center gap-4 mb-4 bg-gray-50 p-3 rounded border border-gray-200 print:hidden">
 
-        {/* 💡 কন্ডিশনাল রেন্ডারিং: প্রসেস পেজে না থাকলে কেবল তখনই এডিট বাটন দেখাবে */}
-        {!isProcessPage && (
-          <button 
-            onClick={handleEdit} 
-            className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded shadow text-xs font-medium flex items-center gap-2 transition-colors"
+        {/* 💡 Font Customization Controls */}
+        <div className="flex items-center gap-2 mr-auto border-r border-gray-300 pr-4">
+          <FiSettings className="text-gray-500" />
+          <select 
+            value={fontFamily} 
+            onChange={(e) => setFontFamily(e.target.value)}
+            className="border border-gray-300 rounded px-2 py-1 text-xs outline-none bg-white text-gray-800 cursor-pointer font-medium"
           >
+            {/* --- ENGLISH STANDARD FONTS (Sans-Serif - ক্লিন ও মডার্ন) --- */}
+            <option value="Inter, sans-serif">Inter (Modern & Clean)</option>
+            <option value="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif">Segoe UI (Windows Default)</option>
+            <option value="Arial, Helvetica, sans-serif">Arial (Standard)</option>
+            <option value="'Helvetica Neue', Helvetica, Arial, sans-serif">Helvetica Neue</option>
+            <option value="'Roboto', sans-serif">Roboto</option>
+            
+            {/* --- BANGLA FONTS (রুটিনের বাংলা টেক্সটের জন্য সেরা) --- */}
+            <option value="'SolaimanLipi', sans-serif">SolaimanLipi (Most Popular Bangla)</option>
+            <option value="'Kalpurush', sans-serif">Kalpurush (Standard Bangla)</option>
+            <option value="'Siyam Rupali', sans-serif">Siyam Rupali</option>
+            <option value="'SutonnyMJ', sans-serif">SutonnyMJ (Bijoy Classic)</option>
+            
+            {/* --- FORMAL & COMPACT FONTS (জায়গা কম থাকলে এবং অফিশিয়াল লুকে) --- */}
+            <option value="'Arial Narrow', Arial, sans-serif">Arial Narrow (For Tight Tables)</option>
+            <option value="'Times New Roman', Times, serif">Times New Roman (Classic Formal)</option>
+            <option value="Georgia, serif">Georgia (Premium Serif)</option>
+            <option value="'Courier New', Courier, monospace">Courier New (Data Style)</option>
+          </select>
+
+          <div className="flex items-center gap-1 bg-white border border-gray-300 rounded px-2 py-1">
+            <label className="text-[11px] font-bold text-gray-600">Size(px):</label>
+            <input 
+              type="number" 
+              value={tableFontSize} 
+              onChange={(e) => setTableFontSize(Number(e.target.value))}
+              className="w-10 text-xs outline-none text-center text-gray-800"
+              min="8" max="24"
+            />
+          </div>
+        </div>
+
+        {!isProcessPage && (
+          <button onClick={handleEdit} className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded shadow text-xs font-medium flex items-center gap-2 transition-colors">
             <FiEdit size={14} /> Edit Routine
           </button>
         )}
 
-        {/* 💡 ডিলিট বাটন */}
         {!isProcessPage && (
-        <button 
-          onClick={handleDelete} 
-          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded shadow text-xs font-medium flex items-center gap-2 transition-colors"
-        >
-          <FiTrash2 size={14} /> Delete Routine
-        </button>
+          <button onClick={handleDelete} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded shadow text-xs font-medium flex items-center gap-2 transition-colors">
+            <FiTrash2 size={14} /> Delete Routine
+          </button>
         )}
 
         {signatureData?.signatureUrl && (
-          <label className="flex items-center cursor-pointer text-xs bg-white shadow-sm hover:bg-gray-50 text-gray-800 font-medium py-2 px-3 rounded border border-gray-300 transition-colors">
+          <label className="flex items-center cursor-pointer text-xs bg-white shadow-sm hover:bg-gray-100 text-gray-800 font-medium py-2 px-3 rounded border border-gray-300 transition-colors">
             <input 
               type="checkbox" 
               className="mr-2 cursor-pointer w-4 h-4 accent-[#434b8c]" 
@@ -166,22 +201,24 @@ export default function MasterRoutineTable({
           </label>
         )}
         
-        {/* Print Button triggers handlePrint */}
-        <button 
-          onClick={handlePrint} 
-          className="bg-[#434b8c] hover:bg-[#2f3573] text-white px-5 py-2 rounded shadow text-xs font-medium flex items-center gap-2 transition-colors"
-        >
+        <button onClick={handlePrint} className="bg-[#434b8c] hover:bg-[#2f3573] text-white px-5 py-2 rounded shadow text-xs font-medium flex items-center gap-2 transition-colors">
           <FiPrinter size={16} /> Print Routine
         </button>
       </div>
 
       {/* ========================================================= */}
-      {/* 💡 PRINTABLE AREA STARTS HERE (Attached the ref)          */}
+      {/* 💡 PRINTABLE AREA STARTS HERE                             */}
       {/* ========================================================= */}
-      <div ref={componentRef} className="bg-white  p-6 rounded-sm relative w-full print:shadow-none print:border-none print:p-0">
+      {/* 💡 Changed font-family dynamically via style */}
+      <div 
+        ref={componentRef} 
+        style={{ fontFamily: fontFamily }}
+        className="bg-white p-6 rounded-sm relative w-full text-black print:shadow-none print:border-none print:p-0"
+      >
         
         {/* Header Section */}
-        <div className="relative border-b-2 border-gray-800 pb-6 mb-6 pt-4 flex flex-col items-center justify-center overflow-hidden">
+        {/* 💡 Replaced border-gray-800 with border-black for pure print color */}
+        <div className="relative border-b-2 border-black pb-6 mb-6 pt-4 flex flex-col items-center justify-center overflow-hidden">
           
           {/* Watermark Logo */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
@@ -195,18 +232,18 @@ export default function MasterRoutineTable({
           </div>
 
           {/* Text Section */}
-          <div className="text-center relative z-10 w-full">
-            <h2 className="text-2xl font-extrabold text-gray-900 tracking-wider uppercase mb-1.5 drop-shadow-sm">
+          <div className="text-center relative z-10 w-full text-black">
+            <h2 className="text-2xl font-extrabold tracking-wider uppercase mb-1.5 drop-shadow-sm text-black">
               {schoolName}
             </h2>
-            <p className="text-[13.5px] text-gray-800 font-bold mb-0.5">
-              {schoolAddress} <span className="mx-1.5 text-gray-400 font-normal">|</span> EIIN: {eiin}
+            <p className="text-[13.5px] font-bold mb-0.5 text-black">
+              {schoolAddress} <span className="mx-1.5 font-normal">|</span> EIIN: {eiin}
             </p>
-            <p className="text-[13.5px] text-gray-800 font-bold mb-3">
-              Mobile: {mobile} <span className="mx-1.5 text-gray-400 font-normal">|</span> Email: {email}
+            <p className="text-[13.5px] font-bold mb-3 text-black">
+              Mobile: {mobile} <span className="mx-1.5 font-normal">|</span> Email: {email}
             </p>
             <div className="mt-4">
-              <span className="text-lg font-bold text-gray-900 uppercase tracking-widest border-b-2 border-gray-900 pb-1 bg-white/50 px-2 rounded">
+              <span className="text-lg font-bold uppercase tracking-widest border-b-2 border-black pb-1 px-2 rounded text-black">
                 Exam Routine
               </span>
             </div>
@@ -214,18 +251,22 @@ export default function MasterRoutineTable({
         </div>
 
         <div className="w-full overflow-x-auto custom-scrollbar">
-          <table className="w-full text-xs text-center border-collapse border-2 border-gray-800 ">
-            <thead className="bg-white font-bold text-gray-900">
+          {/* 💡 Applied dynamic font size here, replaced all border-gray-X with border-black */}
+          <table 
+            style={{ fontSize: `${tableFontSize}px` }} 
+            className="w-full text-center border-collapse border-2 border-black text-black"
+          >
+            <thead className="bg-white font-bold text-black">
               <tr>
-                <td colSpan={leafCols.length + 1} className="border text-gray-900 border-gray-400 p-1.5 text-xs bg-gray-50">
+                <td colSpan={leafCols.length + 1} className="border border-black p-1.5 font-bold bg-gray-50 text-black">
                   Exam: {examName}
                 </td>
               </tr>
               <tr>
-                <td className="border text-gray-900 border-gray-400 p-2 w-24 align-middle" rowSpan="3">Date</td>
+                <td className="border border-black p-2 w-24 align-middle text-black" rowSpan="3">Date</td>
                 {Object.keys(headerStructure).map(cName => {
                   const totalCols = Object.values(headerStructure[cName]).reduce((sum, arr) => sum + arr.length, 0);
-                  return <td key={cName} colSpan={totalCols} className="border border-gray-400 text-gray-900 p-1.5 uppercase">{cName}</td>
+                  return <td key={cName} colSpan={totalCols} className="border border-black text-black p-1.5 uppercase">{cName}</td>
                 })}
               </tr>
               <tr>
@@ -234,9 +275,9 @@ export default function MasterRoutineTable({
                     const grps = headerStructure[cName][sessionName];
                     const sampleCol = grps[0];
                     return (
-                      <td key={`${cName}_${sessionName}`} colSpan={grps.length} className="border text-xs border-gray-400 p-1 leading-tight">
-                        <span className="font-bold text-xs text-gray-900">{sessionName}</span><br/>
-                        <span className=" text-xs font-normal text-gray-900">{sampleCol.startTime}<br/>{sampleCol.endTime}</span>
+                      <td key={`${cName}_${sessionName}`} colSpan={grps.length} className="border border-black p-1 leading-tight text-black">
+                        <span className="font-bold text-black">{sessionName}</span><br/>
+                        <span className="font-normal text-black">{sampleCol.startTime}<br/>{sampleCol.endTime}</span>
                       </td>
                     )
                   })
@@ -244,7 +285,7 @@ export default function MasterRoutineTable({
               </tr>
               <tr>
                 {leafCols.map((col, i) => (
-                  <td key={`grp_${i}`} className="border border-gray-400 p-1 text-xs text-gray-800 uppercase bg-gray-50">
+                  <td key={`grp_${i}`} className="border border-black p-1 text-black uppercase bg-gray-50">
                     {col.groupName}
                   </td>
                 ))}
@@ -255,14 +296,14 @@ export default function MasterRoutineTable({
                 const { shortDate, weekday } = formatDate(date);
                 return (
                   <tr key={date} className="print:break-inside-avoid">
-                    <td className="border border-gray-400 p-1.5 font-semibold whitespace-nowrap bg-gray-50 text-gray-900">
+                    <td className="border border-black p-1.5 font-semibold whitespace-nowrap bg-gray-50 text-black">
                       {shortDate}<br/>{weekday}
                     </td>
                     {leafCols.map((col, i) => {
                       const cellKey = `${date}_${col.className}_${col.session}_${col.groupName}`;
                       const subjectName = masterMap[cellKey];
                       return (
-                        <td key={`cell_${i}`} className="border border-gray-400 p-1.5 align-middle font-medium text-gray-900">
+                        <td key={`cell_${i}`} className="border border-black p-1.5 align-middle font-medium text-black">
                           {subjectName || ""}
                         </td>
                       );
@@ -274,25 +315,21 @@ export default function MasterRoutineTable({
           </table>
         </div>
 
-        {/* Signature Area (Inside Printable Area) */}
+        {/* Signature Area */}
         <div className="flex justify-end mt-12 mr-6 pb-4">
           <div className="text-center">
-            <div className="border-b border-gray-800 w-40 h-16 mb-1 relative flex justify-center items-end">
+            <div className="border-b border-black w-40 h-16 mb-1 relative flex justify-center items-end">
               {useDigitalSignature && signatureData?.signatureUrl && (
                 <img src={signatureData.signatureUrl} alt="Principal Signature" className="absolute bottom-0 h-14 object-contain" />
               )}
             </div>
-            <span className="text-xs font-bold text-gray-800">
+            <span className="text-sm font-bold text-black">
                {signatureData?.title || "Principal"}
             </span>
           </div>
         </div>
 
       </div>
-      {/* ========================================================= */}
-      {/* 💡 PRINTABLE AREA ENDS HERE                               */}
-      {/* ========================================================= */}
-
     </div>
   );
 }

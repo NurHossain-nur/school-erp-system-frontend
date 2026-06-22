@@ -4,7 +4,9 @@ import {
   MdAccountBalanceWallet, MdAccountBalance, MdBarChart, MdWidgets, 
   MdEmail, MdEventNote, MdShoppingBasket, MdDomain, MdCalendarToday, 
   MdSentimentSatisfied, MdNearMe, MdMenuBook, MdPlayArrow, MdLayers, 
-  MdBusinessCenter, MdTrendingDown, MdVpnKey, MdSettings, MdLanguage
+  MdBusinessCenter, MdTrendingDown, MdVpnKey, MdSettings, MdLanguage,
+  MdManageAccounts,
+  MdAssignment
 } from 'react-icons/md';
 
 export const NAVIGATION = [
@@ -38,9 +40,41 @@ export const NAVIGATION = [
     icon: MdPeople,
     href: '#',
     subItems: [
-      { label: 'List', href: '/teachers' },
-      { label: 'Add New', href: '/teachers/add' },
-      { label: 'Attendance Report', href: '/teachers/report' },
+      // --- SETTINGS SUB-GROUP ---
+      {
+        label: 'Settings',
+        // icon: MdSettings, // আপনি চাইলে আইকন এড করতে পারেন, না লাগলে বাদ দিতে পারেন
+        href: '#',
+        subItems: [
+          { label: 'Section', href: '/teacher-staff/settings/section' },
+          { label: 'Designation', href: '/teacher-staff/settings/designation' },
+          { label: 'Pay Code', href: '/teacher-staff/settings/pay-code' },
+          { label: 'Education Qualification', href: '/teacher-staff/settings/qualification' },
+        ]
+      },
+      // --- MANAGE SUB-GROUP ---
+      {
+        label: 'Manage',
+        // icon: MdManageAccounts,
+        href: '#',
+        subItems: [
+          { label: 'List', href: '/teacher-staff/manage/list' },
+          { label: 'Add', href: '/teacher-staff/manage/list/add' },
+          // { label: 'Excel Upload', href: '/teacher-staff/manage/excel-upload' },
+          // { label: 'Multiple Update', href: '/teacher-staff/manage/multiple-update' },
+          // { label: 'Process Code Update', href: '/teacher-staff/manage/process-code-update' },
+        ]
+      },
+      // --- REPORT SUB-GROUP ---
+      // {
+      //   label: 'Report',
+      //   // icon: MdAssignment,
+      //   href: '#',
+      //   subItems: [
+      //     { label: 'Teacher Report', href: '/teacher-staff/report/teacher-report' },
+      //     { label: 'Appointment Letter', href: '/teacher-staff/report/appointment-letter' },
+      //   ]
+      // }
     ],
   },
   {

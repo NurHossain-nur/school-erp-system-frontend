@@ -1,7 +1,7 @@
 // components/routine/examroutine/ClassWiseRoutineTable.jsx
 "use client";
 import React, { useState, useRef } from "react";
-import { FiPrinter, FiDownload } from "react-icons/fi";
+import { FiPrinter, FiDownload, FiSettings } from "react-icons/fi"; // 💡 Added FiSettings
 import { useReactToPrint } from "react-to-print";
 
 // Date Format (13th April, 2026)
@@ -39,6 +39,11 @@ export function ClassWiseRoutineTable({
 }) {
   
   const [useDigitalSignature, setUseDigitalSignature] = useState(signatureData?.isUse === "Yes");
+  
+  // 💡 NEW: States for Dynamic Font Styling
+  const [tableFontSize, setTableFontSize] = useState(13); // Default 13px
+  const [fontFamily, setFontFamily] = useState("Arial, sans-serif");
+
   const componentRef = useRef(null);
 
   const handlePrint = useReactToPrint({
@@ -60,7 +65,7 @@ export function ClassWiseRoutineTable({
     });
   }
 
-  // 💡 NEW LOGIC: Dynamic 3-Tier Column Extraction (Shift -> Group)
+  // Dynamic 3-Tier Column Extraction (Shift -> Group)
   const leafCols = [];
   const datesSet = new Set();
   const masterMap = {};
@@ -116,10 +121,51 @@ export function ClassWiseRoutineTable({
   return (
     <div className="mt-8">
       
-      {/* 💡 Action Buttons */}
-      <div className="flex justify-end items-center gap-4 mb-4">
+      {/* 💡 Action Buttons OUTSIDE printable area */}
+      <div className="flex flex-wrap justify-end items-center gap-4 mb-4 bg-gray-50 p-3 rounded border border-gray-200 print:hidden">
+
+        {/* 💡 Font Customization Controls */}
+        <div className="flex items-center gap-2 mr-auto border-r border-gray-300 pr-4">
+          <FiSettings className="text-gray-500" />
+          <select 
+            value={fontFamily} 
+            onChange={(e) => setFontFamily(e.target.value)}
+            className="border border-gray-300 rounded px-2 py-1 text-xs outline-none bg-white text-gray-800 cursor-pointer font-medium"
+          >
+            {/* --- ENGLISH STANDARD FONTS (Sans-Serif - ক্লিন ও মডার্ন) --- */}
+            <option value="Inter, sans-serif">Inter (Modern & Clean)</option>
+            <option value="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif">Segoe UI (Windows Default)</option>
+            <option value="Arial, Helvetica, sans-serif">Arial (Standard)</option>
+            <option value="'Helvetica Neue', Helvetica, Arial, sans-serif">Helvetica Neue</option>
+            <option value="'Roboto', sans-serif">Roboto</option>
+            
+            {/* --- BANGLA FONTS (রুটিনের বাংলা টেক্সটের জন্য সেরা) --- */}
+            <option value="'SolaimanLipi', sans-serif">SolaimanLipi (Most Popular Bangla)</option>
+            <option value="'Kalpurush', sans-serif">Kalpurush (Standard Bangla)</option>
+            <option value="'Siyam Rupali', sans-serif">Siyam Rupali</option>
+            <option value="'SutonnyMJ', sans-serif">SutonnyMJ (Bijoy Classic)</option>
+            
+            {/* --- FORMAL & COMPACT FONTS (জায়গা কম থাকলে এবং অফিশিয়াল লুকে) --- */}
+            <option value="'Arial Narrow', Arial, sans-serif">Arial Narrow (For Tight Tables)</option>
+            <option value="'Times New Roman', Times, serif">Times New Roman (Classic Formal)</option>
+            <option value="Georgia, serif">Georgia (Premium Serif)</option>
+            <option value="'Courier New', Courier, monospace">Courier New (Data Style)</option>
+          </select>
+
+          <div className="flex items-center gap-1 bg-white border border-gray-300 rounded px-2 py-1">
+            <label className="text-[11px] font-bold text-gray-600">Size(px):</label>
+            <input 
+              type="number" 
+              value={tableFontSize} 
+              onChange={(e) => setTableFontSize(Number(e.target.value))}
+              className="w-10 text-xs outline-none text-center text-gray-800"
+              min="8" max="24"
+            />
+          </div>
+        </div>
+
         {signatureData?.signatureUrl && (
-          <label className="flex items-center cursor-pointer text-xs bg-white shadow-sm hover:bg-gray-50 text-gray-800 font-medium py-2 px-3 rounded border border-gray-300 transition-colors">
+          <label className="flex items-center cursor-pointer text-xs bg-white shadow-sm hover:bg-gray-100 text-gray-800 font-medium py-2 px-3 rounded border border-gray-300 transition-colors">
             <input 
               type="checkbox" 
               className="mr-2 cursor-pointer w-4 h-4 accent-[#434b8c]" 
@@ -129,19 +175,22 @@ export function ClassWiseRoutineTable({
             Use Digital Signature
           </label>
         )}
-        {/* <button className="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded shadow text-sm font-medium transition flex items-center gap-2">
-           <FiDownload size={16} /> PDF
-        </button> */}
-        <button onClick={handlePrint} className="bg-gray-500 hover:bg-gray-600 text-white px-5 py-2 rounded shadow text-sm font-medium transition flex items-center gap-2">
+        
+        <button onClick={handlePrint} className="bg-gray-600 hover:bg-gray-700 text-white px-5 py-2 rounded shadow text-sm font-medium transition flex items-center gap-2">
           <FiPrinter size={16} /> Print
         </button>
       </div>
 
       {/* 💡 PRINTABLE AREA STARTS HERE */}
-      <div ref={componentRef} className="bg-white  overflow-hidden p-6 print:p-0 print:border-none print:shadow-none print:mt-0 w-full relative">
+      <div 
+        ref={componentRef} 
+        style={{ fontFamily: fontFamily }}
+        className="bg-white p-6 print:p-0 print:border-none print:shadow-none print:mt-0 w-full relative text-black"
+      >
         
         {/* Dynamic Header Section (With Watermark) */}
-        <div className="relative border-b-2 border-gray-800 pb-6 mb-6 pt-4 flex flex-col items-center justify-center overflow-hidden">
+        {/* 💡 Replaced border-gray-800 with border-black for pure print color */}
+        <div className="relative border-b-2 border-black pb-6 mb-6 pt-4 flex flex-col items-center justify-center overflow-hidden">
           
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
             {instituteData?.logo ? (
@@ -153,22 +202,22 @@ export function ClassWiseRoutineTable({
             )}
           </div>
 
-          <div className="text-center relative z-10 w-full">
-            <h2 className="text-2xl font-extrabold text-gray-900 tracking-wider uppercase mb-1.5 drop-shadow-sm">
+          <div className="text-center relative z-10 w-full text-black">
+            <h2 className="text-2xl font-extrabold tracking-wider uppercase mb-1.5 drop-shadow-sm text-black">
               {instituteData?.nameEnglish || "GOBINDA IDEAL SCHOOL AND COLLEGE"}
             </h2>
-            <p className="text-[13.5px] text-gray-800 font-bold mb-0.5">
-              {instituteData?.address1English || "Sonaher, Debiganj, Panchagarh"} <span className="mx-1.5 text-gray-400 font-normal">|</span> {instituteData?.eiin ? `EIIN: ${instituteData.eiin}` : ""}
+            <p className="text-[13.5px] font-bold mb-0.5 text-black">
+              {instituteData?.address1English || "Sonaher, Debiganj, Panchagarh"} <span className="mx-1.5 font-normal">|</span> {instituteData?.eiin ? `EIIN: ${instituteData.eiin}` : ""}
             </p>
-            <p className="text-[13.5px] text-gray-800 font-bold mb-3">
-              Mobile: {instituteData?.mobile || "01724304756"} <span className="mx-1.5 text-gray-400 font-normal">|</span> Email: {instituteData?.email || "sonahergps@gmail.com"}
+            <p className="text-[13.5px] font-bold mb-3 text-black">
+              Mobile: {instituteData?.mobile || "01724304756"} <span className="mx-1.5 font-normal">|</span> Email: {instituteData?.email || "sonahergps@gmail.com"}
             </p>
             <div className="mt-4">
-              <span className="text-lg font-bold text-gray-900 uppercase tracking-widest border-b-2 border-gray-900 pb-1 bg-white/50 px-2 rounded">
+              <span className="text-lg font-bold uppercase tracking-widest border-b-2 border-black pb-1 bg-white/50 px-2 rounded text-black">
                 Class {selectedClass} Exam Routine
               </span>
             </div>
-            <p className="text-sm font-bold text-gray-800 mt-3 uppercase tracking-wide">
+            <p className="font-bold mt-3 uppercase tracking-wide text-black" style={{ fontSize: `${tableFontSize + 1}px` }}>
               {selectedExam}
             </p>
           </div>
@@ -176,17 +225,21 @@ export function ClassWiseRoutineTable({
 
         {/* 💡 3-TIER ROUTINE TABLE */}
         <div className="w-full overflow-x-auto print:overflow-visible">
-          <table className="w-full text-sm text-center border-collapse border-2 border-gray-800">
+          {/* 💡 Applied dynamic font size here, replaced all border colors with border-black */}
+          <table 
+            style={{ fontSize: `${tableFontSize}px` }} 
+            className="w-full text-center border-collapse border-2 border-black text-black"
+          >
             <thead className="bg-[#434b8c] text-white">
               
               {/* LEVEL 1: Shift Header */}
               <tr>
-                <th rowSpan="3" className="border border-[#5a62a3] p-3 w-32 font-bold align-middle">Date</th>
-                <th rowSpan="3" className="border border-[#5a62a3] p-3 w-24 font-bold align-middle">Day</th>
+                <th rowSpan="3" className="border border-black p-3 font-bold align-middle">Date</th>
+                <th rowSpan="3" className="border border-black p-3 font-bold align-middle">Day</th>
                 {Object.keys(shiftsStructure).map(shift => {
                   const shiftColSpan = shiftsStructure[shift].length * colsPerGroup;
                   return (
-                    <th key={shift} colSpan={shiftColSpan} className="border border-[#5a62a3] p-2 font-bold uppercase tracking-wider bg-[#2f3573]">
+                    <th key={shift} colSpan={shiftColSpan} className="border border-black p-2 font-bold uppercase tracking-wider bg-[#2f3573]">
                       {shift}
                     </th>
                   );
@@ -197,7 +250,7 @@ export function ClassWiseRoutineTable({
               <tr>
                 {Object.keys(shiftsStructure).map(shift => (
                   shiftsStructure[shift].map(col => (
-                    <th key={col.key} colSpan={colsPerGroup} className="border border-[#5a62a3] p-2 font-bold uppercase bg-[#383f7a]">
+                    <th key={col.key} colSpan={colsPerGroup} className="border border-black p-2 font-bold uppercase bg-[#383f7a]">
                       {col.group} Group
                     </th>
                   ))
@@ -208,10 +261,10 @@ export function ClassWiseRoutineTable({
               <tr>
                 {leafCols.map(col => (
                   <React.Fragment key={`details_${col.key}`}>
-                    <th className="border border-[#5a62a3] p-1.5 text-xs font-bold uppercase tracking-wide">Subject</th>
-                    {showSubjectCode && <th className="border border-[#5a62a3] p-1.5 text-xs font-bold uppercase tracking-wide">Code</th>}
-                    <th className="border border-[#5a62a3] p-1.5 text-xs font-bold uppercase tracking-wide">Time</th>
-                    {showRoomNo && <th className="border border-[#5a62a3] p-1.5 text-[11px] font-bold uppercase tracking-wide">Room</th>}
+                    <th className="border border-black p-1.5 font-bold uppercase tracking-wide">Subject</th>
+                    {showSubjectCode && <th className="border border-black p-1.5 font-bold uppercase tracking-wide">Code</th>}
+                    <th className="border border-black p-1.5 font-bold uppercase tracking-wide">Time</th>
+                    {showRoomNo && <th className="border border-black p-1.5 font-bold uppercase tracking-wide">Room</th>}
                   </React.Fragment>
                 ))}
               </tr>
@@ -221,27 +274,27 @@ export function ClassWiseRoutineTable({
               {sortedDates.map(date => {
                 const { fullDate, dayName } = formatCustomDate(date);
                 return (
-                  <tr key={date} className="hover:bg-gray-50 text-gray-800 font-medium print:break-inside-avoid border-b border-gray-300">
-                    <td className="border border-gray-400 p-2 whitespace-nowrap text-sm font-semibold">{fullDate}</td>
-                    <td className="border border-gray-400 p-2 whitespace-nowrap text-sm">{dayName}</td>
+                  <tr key={date} className="hover:bg-gray-50 font-medium print:break-inside-avoid border-b border-black text-black">
+                    <td className="border border-black p-2 whitespace-nowrap font-semibold text-black">{fullDate}</td>
+                    <td className="border border-black p-2 whitespace-nowrap text-black">{dayName}</td>
                     
                     {leafCols.map(col => {
                       const cellData = masterMap[`${date}_${col.key}`];
                       return (
                         <React.Fragment key={`${date}_${col.key}`}>
-                          <td className="border border-gray-400 p-2 font-bold text-black text-sm">
+                          <td className="border border-black p-2 font-bold text-black">
                             {cellData ? cellData.subjectName : "-"}
                           </td>
                           {showSubjectCode && (
-                            <td className="border border-gray-400 p-2 text-sm text-center">
-                              {cellData ? (subjectCodeMap[cellData.subjectName] || "-") : "-"}
+                            <td className="border border-black p-2 text-center text-black">
+                              {cellData ? (subjectCodeMap[cellData.subjectName] || "*") : "-"}
                             </td>
                           )}
-                          <td className="border border-gray-400 p-2 text-xs whitespace-nowrap text-center text-gray-800 font-semibold">
+                          <td className="border border-black p-2 whitespace-nowrap text-center font-semibold text-black" style={{ fontSize: '0.9em' }}>
                             {cellData ? cellData.time : "-"}
                           </td>
                           {showRoomNo && (
-                            <td className="border border-gray-400 p-2 text-sm text-center">
+                            <td className="border border-black p-2 text-center text-black">
                               {cellData ? cellData.roomNo : "-"}
                             </td>
                           )}
@@ -258,14 +311,16 @@ export function ClassWiseRoutineTable({
         {/* Dynamic Signature Area */}
         <div className="flex justify-end mt-16 pb-4 print:mt-24">
           <div className="text-center mr-6">
-            <div className="border-b border-gray-800 w-40 h-16 mb-1 relative flex items-end justify-center pb-1">
+            <div className="border-b border-black w-40 h-16 mb-1 relative flex items-end justify-center pb-1">
               {useDigitalSignature && signatureData?.signatureUrl ? (
                 <img src={signatureData.signatureUrl} alt="Principal Signature" className="absolute bottom-0 h-14 object-contain" />
               ) : (
                 <span style={{fontFamily: 'cursive', fontSize: '28px', color: '#1a1a1a'}}></span>
               )}
             </div>
-            <span className="text-sm font-bold text-gray-900 uppercase tracking-wide">{signatureData?.title || "Principal"}</span>
+            <span className="font-bold text-black uppercase tracking-wide" style={{ fontSize: `${tableFontSize}px` }}>
+              {signatureData?.title || "Principal"}
+            </span>
           </div>
         </div>
 
