@@ -6,7 +6,12 @@ import {
   MdSentimentSatisfied, MdNearMe, MdMenuBook, MdPlayArrow, MdLayers, 
   MdBusinessCenter, MdTrendingDown, MdVpnKey, MdSettings, MdLanguage,
   MdManageAccounts,
-  MdAssignment
+  MdAssignment,
+  MdPersonAdd,
+  MdEdit,
+  MdGavel,
+  MdCardMembership,
+  MdGroup
 } from 'react-icons/md';
 
 export const NAVIGATION = [
@@ -21,18 +26,75 @@ export const NAVIGATION = [
     href: '#',
     subItems: [
       {
-        label: 'Student Data', // এটি 2nd level
+        label: 'Student Data',
+        // icon: MdGroup, // অথবা অন্য যেকোনো মানানসই আইকন
+        href: '/student/data', // সরাসরি পেজ লিংক বা সাব-গ্রুপ লজিক
+      },
+      // --- ADMISSION SUB-GROUP ---
+      {
+        label: 'Admission',
+        // icon: MdPersonAdd, // মানানসই আইকন (যেমন: + Admission)
         href: '#',
-        subItems: [ // এটি 3rd level (Sub-item এর sub-item)
-          { label: 'Active Students', href: '/students' },
-          { label: 'Inactive Students', href: '/students/inactive' },
+        subItems: [
+          { label: 'Add New Student', href: '/student/admission/add-new' },
+          { label: 'Bulk Admission', href: '/student/admission/bulk' },
+          // { label: 'Excel Admission', href: '/student/admission/excel' },
+          // { label: 'Verification Admission', href: '/student/admission/verification' },
         ]
       },
-      { label: 'Admission', href: '/students/admission' },
-      { label: 'Student Update', href: '/students/update' },
-      { label: 'Disciplinary Action', href: '/students/action' },
-      { label: 'Scholarship', href: '/students/scholarship' },
-      { label: 'Report', href: '/students/report' },
+      // --- STUDENT UPDATE SUB-GROUP ---
+      {
+        label: 'Student Update',
+        // icon: MdEdit, // মানানসই আইকন (যেমন: কলম আইকন)
+        href: '#',
+        subItems: [
+          { label: 'Photo Upload', href: '/student/update/photo-upload' },
+          { label: 'Multiple Update', href: '/student/update/multiple' },
+          { label: 'Process Code Update', href: '/student/update/process-code' },
+          { label: 'Class Wise Migration', href: '/student/update/class-migration' },
+          { label: 'Semester Wise Migration', href: '/student/update/semester-migration' },
+          // { label: 'Course Reg. Per.', href: '/student/update/course-registration' },
+        ]
+      },
+      // --- DISCIPLINARY ACTION SUB-GROUP ---
+      {
+        label: 'Disciplinary Action',
+        // icon: MdGavel, // মানানসই আইকন (যেমন: উইনিং বা ওয়ার্নিং সাইন)
+        href: '#',
+        subItems: [
+          { label: 'Offense Type', href: '/student/disciplinary/offense-type' },
+          { label: 'Disciplinary Action', href: '/student/disciplinary/actions' },
+        ]
+      },
+      // --- SCHOLARSHIP SUB-GROUP ---
+      // {
+      //   label: 'Scholarship',
+      //   // icon: MdCardMembership, // মানানসই আইকন (যেমন: স্কলারশিপ ট্যাগ)
+      //   href: '#',
+      //   subItems: [
+      //     { label: 'Merit Scholarship Student', href: '/student/scholarship/merit-students' },
+      //     { label: 'Scholarship', href: '/student/scholarship/list' },
+      //   ]
+      // },
+      // --- REPORT SUB-GROUP ---
+      {
+        label: 'Report',
+        // icon: MdAssignment, // মানানসই আইকন (যেমন: রিপোর্ট বুক)
+        href: '#',
+        subItems: [
+          { label: 'Student List', href: '/student/report/list' },
+          { label: 'Student Summary Report', href: '/student/report/summary' },
+          { label: 'Course Registration', href: '/student/report/course-reg' },
+          { label: 'Student Data Validation', href: '/student/report/validation' },
+          { label: 'Teacher Unassigned Student List', href: '/student/report/teacher-unassigned' },
+          { label: 'Student Data Comparison', href: '/student/report/comparison' },
+          { label: 'Taught List', href: '/student/report/taught-list' },
+          { label: 'Teacher Wise Student List', href: '/student/report/teacher-wise' },
+          { label: 'Student Duplicate', href: '/student/report/duplicate' },
+          { label: 'Student Search', href: '/student/report/search' },
+          { label: 'Day Wise Admission', href: '/student/report/day-wise' },
+        ]
+      }
     ],
   },
   {
